@@ -35,11 +35,19 @@ public class EmployeeRequest {
     private LocalDate startDate; // Fecha de inicio del permiso/vacación
     private LocalDate endDate; // Fecha de fin del permiso/vacación
 private LocalDateTime requestedDate = LocalDateTime.now();
-    // Estado de la gestión: PENDING, APPROVED, REJECTED
-    @Column(length = 20, nullable = false)
+    // Estado de la gestión: PENDING, IN_REVIEW, AWAITING_SIGNATURE, APPROVED, REJECTED, COMPLETED
+    @Column(length = 30, nullable = false)
     private String status = "PENDING";
 
-    // Comentario del manager/RRHH al responder la solicitud
+    @Column(name = "is_signed", nullable = false)
+    private Boolean isSigned = false;
+
+    @Column(name = "signed_at")
+    private LocalDateTime signedAt;
+
+    @Column(name = "document_path")
+    private String documentPath;
+
     // Comentario del manager/RRHH al responder la solicitud
     private String managerComment;
 

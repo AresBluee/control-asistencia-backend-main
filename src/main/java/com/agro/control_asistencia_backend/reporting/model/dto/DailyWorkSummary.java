@@ -3,11 +3,15 @@ package com.agro.control_asistencia_backend.reporting.model.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DailyWorkSummary {
 
     private Long employeeId;

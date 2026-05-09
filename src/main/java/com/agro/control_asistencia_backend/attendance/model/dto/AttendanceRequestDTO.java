@@ -9,13 +9,12 @@ import lombok.Data;
 @Data
 public class AttendanceRequestDTO {
 
-    @NotBlank(message = "Biometric Hash is required.")
-    private String biometricHash;
+    @NotBlank(message = "Employee code is required.")
+    private String employeeCode;
 
     @NotNull(message = "Device timestamp is required.")
     private LocalDateTime deviceTimestamp;
 
-    
     @NotNull(message = "Latitude is required.")
     private Double latitude;
 

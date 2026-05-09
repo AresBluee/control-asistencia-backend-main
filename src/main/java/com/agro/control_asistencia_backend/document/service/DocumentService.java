@@ -61,6 +61,13 @@ public class DocumentService {
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Empleado no encontrado con ID: " + employeeId));
 
+                // Validar permisos si el cargador es un empleado
+                if (uploader.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_EMPLOYEE"))) {
+                    if (!employee.getUser().getId().equals(uploader.getId())) {
+                        throw new RuntimeException("No tienes permiso para subir documentos para otros empleados.");
+                    }
+                }
+
                 // 2. Definir la ruta de almacenamiento
                 // Generamos un nombre único para evitar colisiones
                 String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();

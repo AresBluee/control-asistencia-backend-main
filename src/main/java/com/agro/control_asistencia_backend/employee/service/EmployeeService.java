@@ -27,7 +27,6 @@ import com.agro.control_asistencia_backend.employee.model.entity.User;
 import com.agro.control_asistencia_backend.employee.model.entity.WorkPosition;
 import com.agro.control_asistencia_backend.employee.repository.EmployeeRepository;
 import com.agro.control_asistencia_backend.employee.repository.PasswordResetTokenRepository;
-import com.agro.control_asistencia_backend.employee.repository.RoleRepository;
 import com.agro.control_asistencia_backend.employee.repository.UserRepository;
 import com.agro.control_asistencia_backend.notification.service.EmailService;
 import com.agro.control_asistencia_backend.reporting.model.dto.EmployeeHourSummaryDTO;
@@ -40,7 +39,6 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final ReportingService reportingService;
@@ -50,12 +48,11 @@ public class EmployeeService {
 
     @Autowired
     public EmployeeService(EmployeeRepository employeeRepository, UserRepository userRepository,
-            RoleRepository roleRepository, PasswordEncoder passwordEncoder,
+            PasswordEncoder passwordEncoder,
             EmailService emailService, ReportingService reportingService,
             WorkPositionService workPositionService) {
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.reportingService = reportingService;
@@ -77,7 +74,7 @@ public class EmployeeService {
                 .address(employee.getAddress())
                 .userId(employee.getUser().getId())
                 .username(employee.getUser().getUsername())
-                .roleName(employee.getUser().getRole().getName().name())
+                .roleName(employee.getUser().getRole().name())
                 .isEnabled(employee.getUser().isEnabled())
                 .hireDate(employee.getHireDate())
                 .fixedSalary(employee.getFixedSalary())
@@ -97,21 +94,24 @@ public class EmployeeService {
 
         // 2. Buscar Rol y crear User
         ERole roleEnum = ERole.valueOf(requestDTO.getRoleName());
-        Role employeeRole = roleRepository.findByName(roleEnum)
-                .orElseThrow(() -> new RuntimeException("Error: Role not found."));
 
         User user = new User();
         user.setUsername(requestDTO.getUsername());
         user.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
-        user.setRole(employeeRole);
+        user.setRole(roleEnum);
         user.setEnabled(true);
         user = userRepository.save(user);
         Employee employee = new Employee();
-        employee.setEmployeeCode(requestDTO.getEmployeeCode());
+        String generatedCode;
+        do {
+            generatedCode = "EMP-" + String.format("%04d", (int)(Math.random() * 10000));
+        } while (employeeRepository.findByEmployeeCode(generatedCode).isPresent());
+        
+        employee.setEmployeeCode(generatedCode);
         employee.setFirstName(requestDTO.getFirstName());
         employee.setLastName(requestDTO.getLastName());
         employee.setPosition(position);
-        employee.setBiometricHash(requestDTO.getBiometricHash());
+        // biometricHash ha sido removido
 
         // 💡 CRÍTICO: Asignar DNI, Email, Teléfono y Address (Se asume que address no
         // viene en el DTO y es nulo)
@@ -342,7 +342,7 @@ public void toggleUserAccountStatus(Long userId, boolean enable) {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + userId));
 
     // CRÍTICO: No se puede suspender la cuenta del propio administrador
-    if (user.getRole().getName() == ERole.ROLE_ADMIN && !enable) {
+    if (user.getRole() == ERole.ROLE_ADMIN && !enable) {
          throw new RuntimeException("No se puede suspender la cuenta del Administrador principal.");
     }
 

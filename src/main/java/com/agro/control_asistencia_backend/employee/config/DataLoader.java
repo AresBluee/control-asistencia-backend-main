@@ -27,7 +27,6 @@ import com.agro.control_asistencia_backend.employee.model.entity.Role;
 import com.agro.control_asistencia_backend.employee.model.entity.User;
 import com.agro.control_asistencia_backend.employee.model.entity.WorkPosition;
 import com.agro.control_asistencia_backend.employee.repository.EmployeeRepository;
-import com.agro.control_asistencia_backend.employee.repository.RoleRepository;
 import com.agro.control_asistencia_backend.employee.repository.UserRepository;
 import com.agro.control_asistencia_backend.employee.repository.WorkPositionRepository;
 import com.agro.control_asistencia_backend.scheduling.model.entity.EmployeeSchedule;
@@ -38,7 +37,6 @@ import com.agro.control_asistencia_backend.scheduling.repository.WorkScheduleRep
 @Component
 public class DataLoader implements CommandLineRunner {
 
-        private final RoleRepository roleRepository;
         private final UserRepository userRepository;
         private final EmployeeRepository employeeRepository;
         private final WorkPositionRepository positionRepository;
@@ -51,14 +49,13 @@ public class DataLoader implements CommandLineRunner {
         private final PasswordEncoder passwordEncoder;
 
         @Autowired
-        public DataLoader(RoleRepository roleRepository, UserRepository userRepository,
+        public DataLoader(UserRepository userRepository,
                         EmployeeRepository employeeRepository, WorkPositionRepository positionRepository,
                         AttendanceRepository attendanceRepository, WorkScheduleRepository scheduleRepository,
                         EmployeeScheduleRepository employeeScheduleRepository,
                         EmployeeRequestRepository employeeRequestRepository,
                         RequestTypeRepository requestTypeRepository, PayslipRepository payslipRepository,
                         PasswordEncoder passwordEncoder) {
-                this.roleRepository = roleRepository;
                 this.userRepository = userRepository;
                 this.employeeRepository = employeeRepository;
                 this.positionRepository = positionRepository;
@@ -74,7 +71,7 @@ public class DataLoader implements CommandLineRunner {
         @Override
         @Transactional
         public void run(String... args) throws Exception {
-                if (roleRepository.count() == 0) {
+                if (positionRepository.count() == 0) {
                         loadRolesAndPositionsAndSchedules();
                 }
                 if (userRepository.count() < 2) {
@@ -84,13 +81,7 @@ public class DataLoader implements CommandLineRunner {
         }
 
         private void loadRolesAndPositionsAndSchedules() {
-                for (ERole roleName : ERole.values()) {
-                        if (roleRepository.findByName(roleName).isEmpty()) {
-                                Role role = new Role();
-                                role.setName(roleName);
-                                roleRepository.save(role);
-                        }
-                }
+
                 createPosition("Gerente General");
                 createPosition("Subgerente de Operaciones");
                 createPosition("Especialista RRHH");
@@ -102,12 +93,12 @@ public class DataLoader implements CommandLineRunner {
                 createPosition("Asistente Administrativo");
                 createPosition("Contador");
 
-                createRequestType("Permiso Personal");
-                createRequestType("Solicitud de Vacaciones");
-                createRequestType("Solicitud de Constancia de Trabajo");
-                createRequestType("Solicitud de Permiso Médico");
-                createRequestType("Solicitud de Cambio de Turno");
-                createRequestType("Solicitud de Capacitación");
+                createRequestType("Permiso Personal", 2, 2, false);
+                createRequestType("Solicitud de Vacaciones", 3, 3, true);
+                createRequestType("Solicitud de Constancia de Trabajo", 2, 5, true);
+                createRequestType("Solicitud de Permiso Médico", 4, 1, false);
+                createRequestType("Solicitud de Cambio de Turno", 2, 2, false);
+                createRequestType("Solicitud de Capacitación", 1, 7, false);
 
                 createWorkSchedule("Turno Cosecha Mañana", LocalTime.of(7, 0), LocalTime.of(16, 0));
                 createWorkSchedule("Turno Cosecha Tarde", LocalTime.of(15, 0), LocalTime.of(23, 0));
@@ -116,32 +107,36 @@ public class DataLoader implements CommandLineRunner {
                 System.out.println("-> Roles, Posiciones, Tipos de Solicitud y Horarios de Trabajo cargados.");
         }
 
-        private Employee createUserAndEmployee(String username, String password, String code, String first, String last,
+        private Employee createUserAndEmployee(String username, String password, String first, String last,
                         String dni, String email, String positionName, double fixed, double hourly, ERole roleEnum,
                         WorkPosition position) {
                 if (userRepository.findByUsername(username).isPresent())
                         return null;
 
-                Role role = roleRepository.findByName(roleEnum)
-                                .orElseThrow(() -> new RuntimeException("Rol " + roleEnum.name() + " no encontrado."));
                 WorkPosition posEntity = positionRepository.findByName(positionName)
                                 .orElseThrow(() -> new RuntimeException("Cargo no encontrado: " + positionName));
 
                 User user = new User();
                 user.setUsername(username);
                 user.setPassword(passwordEncoder.encode(password));
-                user.setRole(role);
+                user.setRole(roleEnum);
                 user = userRepository.save(user);
 
                 Employee employee = new Employee();
-                employee.setEmployeeCode(code);
+                
+                String generatedCode;
+                do {
+                    generatedCode = "EMP-" + String.format("%04d", (int)(Math.random() * 10000));
+                } while (employeeRepository.findByEmployeeCode(generatedCode).isPresent());
+                employee.setEmployeeCode(generatedCode);
+
                 employee.setFirstName(first);
                 employee.setLastName(last);
                 employee.setDni(dni);
                 employee.setEmail(email);
                 employee.setPhoneNumber("9" + dni.substring(2));
                 employee.setAddress("Calle Falsa 123, Ica");
-                employee.setBiometricHash("HASH-" + code + "-UNIQUE-ID-78901234567890123456");
+                // biometricHash removido
                 employee.setFixedSalary(new BigDecimal(fixed));
                 employee.setHourlyRate(new BigDecimal(hourly));
                 employee.setHireDate(LocalDate.now());
@@ -153,16 +148,11 @@ public class DataLoader implements CommandLineRunner {
         }
 
         private void loadUsersAndEmployeeData() {
-                Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Rol ADMIN no encontrado."));
-                Role empleadoRole = roleRepository.findByName(ERole.ROLE_EMPLOYEE)
-                                .orElseThrow(() -> new RuntimeException("Rol Empleado no encontrado."));
-                Role rrhhRole = roleRepository.findByName(ERole.ROLE_RRHH)
-                                .orElseThrow(() -> new RuntimeException("Rol RRHH no encontrado."));
-                Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Rol USER no encontrado."));
-                Role supervisorRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
-                                .orElseThrow(() -> new RuntimeException("Rol SUPERVISOR no encontrado."));
+                ERole adminRole = ERole.ROLE_ADMIN;
+                ERole empleadoRole = ERole.ROLE_EMPLOYEE;
+                ERole rrhhRole = ERole.ROLE_RRHH;
+                ERole userRole = ERole.ROLE_USER;
+                ERole supervisorRole = ERole.ROLE_SUPERVISOR;
 
                 WorkPosition gerencia = positionRepository.findByName("Gerente General")
                                 .orElseThrow(() -> new RuntimeException("Cargo 'Gerente General' no encontrado."));
@@ -191,65 +181,65 @@ public class DataLoader implements CommandLineRunner {
                                 .orElseThrow(() -> new RuntimeException("Cargo 'Contador' no encontrado."));
 
                 // ADMINISTRADORES
-                createUserAndEmployee("admin", "admin123", "ADM-001", "Carlos", "Mendoza", "12345678",
-                                "carlos.mendoza@agrocyt.com", "Gerente General", 6000.00, 60.00, adminRole.getName(),
+                createUserAndEmployee("admin", "admin123", "Carlos", "Mendoza", "12345678",
+                                "carlos.mendoza@agrocyt.com", "Gerente General", 6000.00, 60.00, adminRole,
                                 gerencia);
-                createUserAndEmployee("subadmin", "subadmin123", "ADM-002", "Roberto", "Silva", "87654321",
+                createUserAndEmployee("subadmin", "subadmin123", "Roberto", "Silva", "87654321",
                                 "roberto.silva@agrocyt.com", "Subgerente de Operaciones", 4500.00, 45.00,
-                                adminRole.getName(),
+                                adminRole,
                                 subgerencia);
 
                 // ESPECIALISTA RRHH
-                Employee rrhhEmployee = createUserAndEmployee("rrhh", "rrhh123", "RRHH-001", "Ana", "Gómez", "88776655",
-                                "ana.gomez@agrocyt.com", "Especialista RRHH", 3500.00, 35.00, rrhhRole.getName(),
+                Employee rrhhEmployee = createUserAndEmployee("rrhh", "rrhh123", "Ana", "Gómez", "88776655",
+                                "ana.gomez@agrocyt.com", "Especialista RRHH", 3500.00, 35.00, rrhhRole,
                                 rrhhPos);
 
                 // SUPERVISORES
-                Employee supervisor1 = createUserAndEmployee("supervisor1", "sup123", "SUP-001", "Miguel", "Torres",
+                Employee supervisor1 = createUserAndEmployee("supervisor1", "sup123", "Miguel", "Torres",
                                 "11223344",
                                 "miguel.torres@agrocyt.com", "Supervisor de Campo", 2800.00, 28.00,
-                                supervisorRole.getName(),
+                                supervisorRole,
                                 supervisorCampo);
-                Employee supervisor2 = createUserAndEmployee("supervisor2", "sup123", "SUP-002", "Elena", "Vargas",
+                Employee supervisor2 = createUserAndEmployee("supervisor2", "sup123", "Elena", "Vargas",
                                 "55667788",
                                 "elena.vargas@agrocyt.com", "Supervisor de Mantenimiento", 2800.00, 28.00,
-                                supervisorRole.getName(),
+                                supervisorRole,
                                 supervisorMantenimiento);
 
                 // TRABAJADORES (USER)
-                Employee maria = createUserAndEmployee("maria", "pass123", "EMP-001", "María", "López", "45454545",
-                                "maria.lopez@agrocyt.com", "Cosechador", 1200.00, 15.00, empleadoRole.getName(),
+                Employee maria = createUserAndEmployee("maria", "pass123", "María", "López", "45454545",
+                                "maria.lopez@agrocyt.com", "Cosechador", 1200.00, 15.00, empleadoRole,
                                 cosechador);
-                Employee juan = createUserAndEmployee("juan", "pass123", "EMP-002", "Juan", "Pérez", "32323232",
-                                "juan.perez@agrocyt.com", "Cosechador", 1200.00, 15.00, empleadoRole.getName(),
+                Employee juan = createUserAndEmployee("juan", "pass123", "Juan", "Pérez", "32323232",
+                                "juan.perez@agrocyt.com", "Cosechador", 1200.00, 15.00, empleadoRole,
                                 cosechador);
-                Employee pedro = createUserAndEmployee("pedro", "pass123", "EMP-003", "Pedro", "Ramírez", "99887766",
+                Employee pedro = createUserAndEmployee("pedro", "pass123", "Pedro", "Ramírez", "99887766",
                                 "pedro.ramirez@agrocyt.com", "Operador de Maquinaria", 1500.00, 18.00,
-                                empleadoRole.getName(),
+                                empleadoRole,
                                 operadorMaquinaria);
-                Employee lucia = createUserAndEmployee("lucia", "pass123", "EMP-004", "Lucía", "Fernández", "55443322",
+                Employee lucia = createUserAndEmployee("lucia", "pass123", "Lucía", "Fernández", "55443322",
                                 "lucia.fernandez@agrocyt.com", "Técnico de Mantenimiento", 1400.00, 17.00,
-                                empleadoRole.getName(),
+                                empleadoRole,
                                 tecnicoMantenimiento);
-                Employee carmen = createUserAndEmployee("carmen", "pass123", "EMP-005", "Carmen", "Ruiz", "77665544",
+                Employee carmen = createUserAndEmployee("carmen", "pass123", "Carmen", "Ruiz", "77665544",
                                 "carmen.ruiz@agrocyt.com", "Asistente Administrativo", 1300.00, 16.00,
-                                empleadoRole.getName(),
+                                empleadoRole,
                                 asistenteAdmin);
-                Employee diego = createUserAndEmployee("diego", "pass123", "EMP-006", "Diego", "Morales", "33445566",
-                                "diego.morales@agrocyt.com", "Contador", 2000.00, 25.00, empleadoRole.getName(),
+                Employee diego = createUserAndEmployee("diego", "pass123", "Diego", "Morales", "33445566",
+                                "diego.morales@agrocyt.com", "Contador", 2000.00, 25.00, empleadoRole,
                                 contador);
 
                 System.out.println("-> Usuarios y Perfiles de Empleado creados.");
         }
 
         private void loadAttendanceAndRequestsAndPayslips() {
-                Employee maria = employeeRepository.findByEmployeeCode("EMP-001")
+                Employee maria = employeeRepository.findByEmail("maria.lopez@agrocyt.com")
                                 .orElseThrow(() -> new RuntimeException("Empleado 'maria' no encontrado."));
-                Employee juan = employeeRepository.findByEmployeeCode("EMP-002")
+                Employee juan = employeeRepository.findByEmail("juan.perez@agrocyt.com")
                                 .orElseThrow(() -> new RuntimeException("Empleado 'juan' no encontrado."));
-                Employee carmen = employeeRepository.findByEmployeeCode("EMP-005")
+                Employee carmen = employeeRepository.findByEmail("carmen.ruiz@agrocyt.com")
                                 .orElseThrow(() -> new RuntimeException("Empleado 'carmen' no encontrado."));
-                Employee supervisor1 = employeeRepository.findByEmployeeCode("SUP-001")
+                Employee supervisor1 = employeeRepository.findByEmail("miguel.torres@agrocyt.com")
                                 .orElseThrow(() -> new RuntimeException("Empleado 'supervisor1' no encontrado."));
 
                 WorkSchedule turnoManana = scheduleRepository.findByName("Turno Cosecha Mañana")
@@ -326,12 +316,13 @@ public class DataLoader implements CommandLineRunner {
                 }
         }
 
-        private void createRequestType(String name) {
-                if (requestTypeRepository.findByName(name).isEmpty()) {
-                        RequestType type = new RequestType();
-                        type.setName(name);
-                        requestTypeRepository.save(type);
-                }
+        private void createRequestType(String name, int basePriority, int slaDays, boolean requiresSignature) {
+                RequestType type = requestTypeRepository.findByName(name).orElse(new RequestType());
+                type.setName(name);
+                type.setBasePriority(basePriority);
+                type.setSlaDays(slaDays);
+                type.setRequiresSignature(requiresSignature);
+                requestTypeRepository.save(type);
         }
 
         private void createWorkSchedule(String name, LocalTime startTime, LocalTime endTime) {

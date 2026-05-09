@@ -47,7 +47,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl build(User user) {
 
-        String roleName = user.getRole().getName().name();
+        String roleName = user.getRole().name();
         logger.info("Building UserDetails for {} with role: {}", user.getUsername(), roleName);
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleName);
 

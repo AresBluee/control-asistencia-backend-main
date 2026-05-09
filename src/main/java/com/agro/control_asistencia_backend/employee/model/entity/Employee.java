@@ -23,8 +23,7 @@ import lombok.NoArgsConstructor;
         @UniqueConstraint(columnNames = "employee_code"),
         // 2. CRÍTICO: dni debe ser único
         @UniqueConstraint(columnNames = "dni"),
-        // 3. CRÍTICO: biometric_hash debe ser único (Espacio eliminado)
-        @UniqueConstraint(columnNames = "biometric_hash"),
+        // El hash biométrico fue removido
         // 4. CRÍTICO: email debe ser único (ya está en @Column, pero es buena práctica
         // declararlo aquí)
         @UniqueConstraint(columnNames = "email")
@@ -63,9 +62,7 @@ public class Employee {
     @Column(name = "dni", nullable = false, length = 8, unique = true)
     private String dni;
 
-    // Datos de Seguridad / Biometría
-    @Column(name = "biometric_hash", nullable = false, length = 64)
-    private String biometricHash;
+    // El campo biometricHash ha sido eliminado
 
     // Relaciones
     @OneToOne(fetch = FetchType.LAZY)

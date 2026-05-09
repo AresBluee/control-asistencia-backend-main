@@ -29,9 +29,7 @@ public class EmployeeRequestDTO {
     
     // --- Datos del Empleado ---
 
-    @NotBlank(message = "El código de empleado no puede exceder los 10 caracteres.")
-    @Size(max = 10)
-    private String employeeCode;
+    // El código de empleado se genera automáticamente en el backend
 
     @NotBlank(message = "El nombre es obligatorio.")
     @Size(max = 50)
@@ -44,9 +42,7 @@ public class EmployeeRequestDTO {
     @NotNull(message = "El ID del cargo es obligatorio.")
     private Long positionId;
 
-    @NotBlank(message = "El hash biométrico es obligatorio.")
-    @Size(min = 32, max = 64, message = "El hash biométrico debe tener un tamaño válido (32-64).")
-    private String biometricHash;
+    // Se ha eliminado el hash biométrico a petición.
 
     // --- Datos de la Cuenta de Usuario (Login) ---
     

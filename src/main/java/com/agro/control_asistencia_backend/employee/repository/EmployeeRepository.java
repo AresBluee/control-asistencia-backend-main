@@ -10,7 +10,9 @@ import com.agro.control_asistencia_backend.employee.model.entity.Employee;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    Optional<Employee> findByBiometricHash(String biometricHash);
+
+
+    // Biometric lookup removed; use employee code instead
 
     Optional<Employee> findByEmployeeCode(String employeeCode);
 

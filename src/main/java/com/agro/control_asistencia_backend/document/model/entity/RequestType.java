@@ -19,4 +19,13 @@ public class RequestType {
 
     @Column(nullable = false, unique = true)
     private String name; 
+
+    @Column(name = "base_priority", nullable = false)
+    private Integer basePriority = 1; // 1: Baja, 2: Media, 3: Alta, 4: Crítica
+
+    @Column(name = "sla_days", nullable = false)
+    private Integer slaDays = 7; // Días máximos de atención
+
+    @Column(name = "requires_signature", nullable = false)
+    private Boolean requiresSignature = false; // Si requiere firma del jefe
 }

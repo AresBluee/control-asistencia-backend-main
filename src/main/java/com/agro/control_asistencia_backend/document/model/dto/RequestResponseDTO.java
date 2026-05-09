@@ -18,6 +18,14 @@ public class RequestResponseDTO {
     private LocalDate requestedDate;
     private LocalDate startDate;
     private LocalDate endDate;
-    private String status; // PENDING, APPROVED, REJECTED
+    private String status; // PENDING, IN_REVIEW, AWAITING_SIGNATURE, APPROVED, REJECTED, COMPLETED
     private String managerComment; // Comentario del manager/RRHH
+    private String managerName; // Nombre del jefe que aprobó/firmó
+
+    // Nuevos campos
+    private Integer calculatedPriority;
+    private Long remainingSlaHours;
+    private Boolean isSigned;
+    private String documentPath;
+    private Boolean requiresSignature;
 }

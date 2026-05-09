@@ -36,7 +36,7 @@ public class AttendanceService {
     @Transactional
     public AttendanceResponseDTO processAttendanceRecord(AttendanceRequestDTO requestDTO) {
 
-        Optional<Employee> employeeOpt = employeeRepository.findByBiometricHash(requestDTO.getBiometricHash());
+        Optional<Employee> employeeOpt = employeeRepository.findByEmployeeCode(requestDTO.getEmployeeCode());
 
         if (employeeOpt.isEmpty()) {
             throw new RuntimeException("Biometric ID not recognized. Employee not found.");
@@ -98,7 +98,7 @@ public class AttendanceService {
             dto.setEmployeeCode(employee.getEmployeeCode());
             dto.setFullName(employee.getFirstName() + " " + employee.getLastName());
             dto.setPosition(employee.getPosition().getName());
-            dto.setBiometricHash(employee.getBiometricHash());
+            // dto.setBiometricHash(employee.getBiometricHash()); // removed biometric reference
             dto.setReportDate(date);
 
             if (lastRecord.isEmpty() || lastRecord.get().getDeviceTimestamp().toLocalDate().isBefore(date)) {

@@ -65,11 +65,18 @@ import lombok.Data;
         // ---------------------------------------------------------------------
     
         @PostMapping("/upload")
-        @PreAuthorize("hasAnyAuthority(\'ROLE_ADMIN\', \'ROLE_RRHH\')") // \uD83D\uDD12 Seguridad
+        @PreAuthorize("hasAnyAuthority(\'ROLE_ADMIN\', \'ROLE_RRHH\', \'ROLE_EMPLOYEE\')") // \uD83D\uDD12 Seguridad
         public ResponseEntity<DocumentResponseDTO> uploadDocument(
-                @RequestPart("metadata") @Valid FileUploadDTO metadata,
+                @RequestPart("metadata") String metadataStr,
                 @RequestPart("file") @NotNull MultipartFile file,
                 @AuthenticationPrincipal UserDetailsImpl uploader) throws IOException {
+    
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            FileUploadDTO metadata = mapper.readValue(metadataStr, FileUploadDTO.class);
+            
+            if (metadata.getEmployeeId() == null || metadata.getDocumentType() == null || metadata.getDocumentType().isBlank()) {
+                throw new IllegalArgumentException("El ID del empleado y el tipo de documento son obligatorios.");
+            }
     
             DocumentResponseDTO response = documentService.uploadDocument(
                     metadata.getEmployeeId(), metadata.getDocumentType(), file, uploader);

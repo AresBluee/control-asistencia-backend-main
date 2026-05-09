@@ -23,4 +23,6 @@ public class RequestCreateDTO {
     private LocalDate startDate;
 
     private LocalDate endDate; // Puede ser nulo si es un permiso de un solo día.
+
+    private Long documentId; // ID del documento adjunto (opcional)
 }

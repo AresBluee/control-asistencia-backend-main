@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -97,8 +98,23 @@ public class RequestController {
 
         // El servicio actualiza el estado y devuelve el DTO con los detalles
         RequestResponseDTO updatedRequest = requestService.updateRequestStatus(
-                requestId, statusDTO.getStatus(), statusDTO.getComment());
+                requestId, statusDTO.getStatus(), statusDTO.getComment(), statusDTO.getManagerId());
 
+        return ResponseEntity.ok(updatedRequest);
+    }
+
+    // -----------------------------------------------------------
+    // 5. ENDPOINT: FIRMAR Y SUBIR DOCUMENTO (JEFE/ADMIN)
+    // POST /api/requests/{requestId}/sign-upload
+    // -----------------------------------------------------------
+    @PostMapping("/{requestId}/sign-upload")
+    @PreAuthorize("hasRole('SUPERVISOR') or hasRole('ADMIN')")
+    public ResponseEntity<RequestResponseDTO> signAndUploadRequest(
+            @PathVariable Long requestId,
+            @RequestPart("file") @jakarta.validation.constraints.NotNull org.springframework.web.multipart.MultipartFile file,
+            @AuthenticationPrincipal UserDetailsImpl user) throws java.io.IOException {
+
+        RequestResponseDTO updatedRequest = requestService.signAndUploadRequest(requestId, file, user);
         return ResponseEntity.ok(updatedRequest);
     }
 
@@ -111,5 +127,6 @@ public class RequestController {
     static class StatusUpdateDTO { 
         private String status;
         private String comment;
+        private Long managerId;
     }
 }
