@@ -99,8 +99,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/employee/me", "/api/employee/managers").authenticated()
                         .requestMatchers("/api/schedules/me").authenticated()
-                        .requestMatchers("/api/employee/**").hasAnyRole("ADMIN", "RRHH")
-                        .requestMatchers("/api/schedules/**").hasAnyRole("ADMIN", "RRHH")
+                        .requestMatchers("/api/employee/**").hasAnyRole("ADMIN", "RRHH", "SUPERVISOR")
+                        .requestMatchers("/api/schedules/**").hasAnyRole("ADMIN", "RRHH", "SUPERVISOR")
                         .requestMatchers("/api/documents/**").permitAll()
                         .anyRequest().authenticated());
 

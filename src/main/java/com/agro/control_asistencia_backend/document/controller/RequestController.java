@@ -46,7 +46,7 @@ public class RequestController {
     // POST /api/requests
     // -----------------------------------------------------------
     @PostMapping
-    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')") // El empleado es el que debe hacer esto
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('RRHH') or hasRole('SUPERVISOR')") // El empleado es el que debe hacer esto
     public ResponseEntity<RequestResponseDTO> createEmployeeRequest(
             @Valid @RequestBody RequestCreateDTO requestDTO,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -64,7 +64,7 @@ public class RequestController {
     // GET /api/requests
     // -----------------------------------------------------------
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH') or hasRole('SUPERVISOR')")
     public ResponseEntity<List<RequestResponseDTO>> getAllRequests() {
         // Llama al servicio para obtener todas las solicitudes (PENDIENTES y otras)
         List<RequestResponseDTO> allRequests = requestService.getAllRequests();
@@ -91,7 +91,7 @@ public class RequestController {
     // PUT /api/requests/{requestId}/status
     // -----------------------------------------------------------
     @PutMapping("/{requestId}/status")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH') or hasRole('SUPERVISOR')")
     public ResponseEntity<RequestResponseDTO> updateRequestStatus(
             @PathVariable Long requestId,
             @RequestBody StatusUpdateDTO statusDTO) {

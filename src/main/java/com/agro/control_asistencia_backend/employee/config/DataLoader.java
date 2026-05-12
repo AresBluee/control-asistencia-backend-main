@@ -93,12 +93,12 @@ public class DataLoader implements CommandLineRunner {
                 createPosition("Asistente Administrativo");
                 createPosition("Contador");
 
-                createRequestType("Permiso Personal", 2, 2, false);
-                createRequestType("Solicitud de Vacaciones", 3, 3, true);
-                createRequestType("Solicitud de Constancia de Trabajo", 2, 5, true);
-                createRequestType("Solicitud de Permiso Médico", 4, 1, false);
-                createRequestType("Solicitud de Cambio de Turno", 2, 2, false);
-                createRequestType("Solicitud de Capacitación", 1, 7, false);
+                createRequestType("Permiso Personal", 2, 2, false, false);
+                createRequestType("Solicitud de Vacaciones", 3, 3, true, false);
+                createRequestType("Solicitud de Constancia de Trabajo", 2, 5, true, false);
+                createRequestType("Solicitud de Permiso Médico", 4, 1, false, true);
+                createRequestType("Solicitud de Cambio de Turno", 2, 2, false, false);
+                createRequestType("Solicitud de Capacitación", 1, 7, false, false);
 
                 createWorkSchedule("Turno Cosecha Mañana", LocalTime.of(7, 0), LocalTime.of(16, 0));
                 createWorkSchedule("Turno Cosecha Tarde", LocalTime.of(15, 0), LocalTime.of(23, 0));
@@ -316,12 +316,13 @@ public class DataLoader implements CommandLineRunner {
                 }
         }
 
-        private void createRequestType(String name, int basePriority, int slaDays, boolean requiresSignature) {
+        private void createRequestType(String name, int basePriority, int slaDays, boolean requiresSignature, boolean requiresAttachment) {
                 RequestType type = requestTypeRepository.findByName(name).orElse(new RequestType());
                 type.setName(name);
                 type.setBasePriority(basePriority);
                 type.setSlaDays(slaDays);
                 type.setRequiresSignature(requiresSignature);
+                type.setRequiresAttachment(requiresAttachment);
                 requestTypeRepository.save(type);
         }
 

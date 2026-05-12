@@ -28,4 +28,7 @@ public class RequestType {
 
     @Column(name = "requires_signature", nullable = false)
     private Boolean requiresSignature = false; // Si requiere firma del jefe
+
+    @Column(name = "requires_attachment", nullable = false)
+    private Boolean requiresAttachment = false; // Si requiere subir documento/prueba
 }

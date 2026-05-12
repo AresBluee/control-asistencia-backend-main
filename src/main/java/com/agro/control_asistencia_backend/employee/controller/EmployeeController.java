@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
 import com.agro.control_asistencia_backend.employee.model.dto.EmployeeRequestDTO;
 import com.agro.control_asistencia_backend.employee.model.dto.EmployeeResponseDTO;
 import com.agro.control_asistencia_backend.employee.model.dto.EmployeeProfileUpdateDTO;
@@ -79,6 +80,7 @@ public class EmployeeController {
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
     public ResponseEntity<EmployeeProfileDTO> getMyProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getId();
 
@@ -163,7 +165,7 @@ public class EmployeeController {
     // -------------------------------------------------------------------------
 
     @PutMapping("/status/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH')") // Solo gestión puede cambiar el estado
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RRHH') or hasRole('SUPERVISOR')") // Solo gestión puede cambiar el estado
     public ResponseEntity<MessageResponse> toggleUserStatus(
             @PathVariable Long userId,
             @RequestParam boolean enable) { // Recibe el estado booleano
