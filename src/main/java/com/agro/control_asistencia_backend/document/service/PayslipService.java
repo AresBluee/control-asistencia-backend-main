@@ -120,6 +120,12 @@ public class PayslipService {
     }
 
     @Transactional(readOnly = true)
+    public Payslip getPayslipEntityById(Long id) {
+        return payslipRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Boleta de pago no encontrada con ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
     public List<PayslipResponseDTO> getAllPayslips() {
         return payslipRepo.findAll().stream().map(this::mapToPayslipResponseDTO).collect(java.util.stream.Collectors.toList());
     }

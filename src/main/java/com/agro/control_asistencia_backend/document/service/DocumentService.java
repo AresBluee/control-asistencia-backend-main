@@ -1,9 +1,6 @@
 package com.agro.control_asistencia_backend.document.service;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -160,8 +157,38 @@ public class DocumentService {
                                 payslip.getEmployee().getId(),
                                 period);
 
-                String documentPath = "/payslips/" + fileName;
-                return documentPath;
+                // Usar ruta absoluta basada en el directorio de subida configurado
+                Path outputDir = Paths.get(uploadDir, "payslips");
+                Path filePath = Paths.get(uploadDir, "payslips", fileName);
+
+                try {
+                        Files.createDirectories(outputDir);
+
+                        com.lowagie.text.Document pdfDoc = new com.lowagie.text.Document();
+                        try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+                                com.lowagie.text.pdf.PdfWriter.getInstance(pdfDoc, fos);
+                                pdfDoc.open();
+
+                                pdfDoc.add(new com.lowagie.text.Paragraph("BOLETA DE PAGO"));
+                                pdfDoc.add(com.lowagie.text.Chunk.NEWLINE);
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Empleado: " + payslip.getEmployee().getFirstName() + " " + payslip.getEmployee().getLastName()));
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Código: " + payslip.getEmployee().getEmployeeCode()));
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Cargo: " + payslip.getEmployee().getPosition().getName()));
+                                pdfDoc.add(com.lowagie.text.Chunk.NEWLINE);
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Período: " + payslip.getPeriodStartDate() + " - " + payslip.getPeriodEndDate()));
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Salario Bruto: S/ " + payslip.getGrossSalary()));
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Bonificaciones: S/ " + payslip.getBonuses()));
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Descuentos: S/ " + payslip.getDeductions()));
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Sueldo Neto: S/ " + payslip.getNetSalary()));
+                                pdfDoc.add(com.lowagie.text.Chunk.NEWLINE);
+                                pdfDoc.add(new com.lowagie.text.Paragraph("Fecha de generación: " + payslip.getGenerationDate()));
+                                pdfDoc.close();
+                        }
+                } catch (Exception e) {
+                        throw new RuntimeException("Error al generar PDF de boleta: " + e.getMessage(), e);
+                }
+
+                return filePath.toString();
         }
 
         @Transactional(readOnly = true)

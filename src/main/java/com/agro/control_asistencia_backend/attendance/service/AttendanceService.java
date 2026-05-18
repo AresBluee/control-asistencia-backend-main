@@ -114,6 +114,8 @@ public class AttendanceService {
                     dto.setStatus("SALIO");
                 }
             }
+
+            dto.setEmployeeCode(employee.getEmployeeCode());
             return dto;
         }).collect(Collectors.toList());
     }

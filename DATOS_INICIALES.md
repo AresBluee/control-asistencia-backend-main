@@ -21,7 +21,7 @@
 
 ### Especialista RRHH (1)
 3. **rrhh** / rrhh123
-   - Nombre: Ana Gómez
+   - Nombre: Ana   Gómez
    - Código: RRHH-001
    - Email: ana.gomez@agrocyt.com
    - Cargo: Especialista RRHH
