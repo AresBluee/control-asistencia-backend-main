@@ -170,6 +170,14 @@ public class RequestService {
         String managerName = request.getManager() != null ? 
                 request.getManager().getFirstName() + " " + request.getManager().getLastName() : "No asignado";
 
+        String docPath = request.getDocumentPath();
+        if (docPath != null && (docPath.startsWith("uploads") || docPath.contains("\\") || docPath.contains("/uploads"))) {
+            Optional<com.agro.control_asistencia_backend.document.model.entity.Document> docOpt = documentRepository.findByStoragePath(docPath);
+            if (docOpt.isPresent()) {
+                docPath = "/api/documents/" + docOpt.get().getId() + "/download";
+            }
+        }
+
         return RequestResponseDTO.builder()
                 .managerName(managerName)
                 .id(request.getId())
@@ -185,7 +193,7 @@ public class RequestService {
         .calculatedPriority(calculatedPriority)
         .remainingSlaHours(remainingSlaHours)
         .isSigned(request.getIsSigned())
-        .documentPath(request.getDocumentPath())
+        .documentPath(docPath)
         .requiresSignature(request.getRequestType().getRequiresSignature())
         .build();
     }

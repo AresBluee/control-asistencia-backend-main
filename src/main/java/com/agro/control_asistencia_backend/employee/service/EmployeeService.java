@@ -224,9 +224,26 @@ public class EmployeeService {
 
     @Transactional(readOnly = true)
     public List<ManagerContactDTO> getManagersByRoles(String... roleNames) {
-        // Lógica para obtener managers (se mantiene igual)
-        // ...
-        return null; // Retorno temporal para evitar errores de compilación
+        List<ERole> roles = java.util.Arrays.stream(roleNames)
+                .map(roleName -> {
+                    try {
+                        return ERole.valueOf("ROLE_" + roleName);
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return employeeRepository.findAll().stream()
+                .filter(emp -> roles.contains(emp.getUser().getRole()))
+                .map(emp -> ManagerContactDTO.builder()
+                        .id(emp.getId())
+                        .fullName(emp.getFirstName() + " " + emp.getLastName())
+                        .position(emp.getPosition().getName())
+                        .roleName(emp.getUser().getRole().name())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Transactional
