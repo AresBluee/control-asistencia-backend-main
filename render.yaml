@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: agrocyt-control-asistencia-backend
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://localhost:5432/control_asistencia
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: ares
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      - key: SPRING_JPA_SHOW_SQL
+        value: false
+      - key: SERVER_PORT
+        value: 8080
+      - key: AGRO_APP_JWTSECRET
+        value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      - key: AGRO_APP_JWTEXPIRATIONMS
+        value: 86400000
+      - key: FILE_UPLOAD_DIR
+        value: /opt/render/project/src/uploads
+      - key: SPRING_MAIL_HOST
+        value: smtp.gmail.com
+      - key: SPRING_MAIL_PORT
+        value: 587
+      - key: SPRING_MAIL_USERNAME
+        value: ares19951208@gmail.com
+      - key: SPRING_MAIL_PASSWORD
+        value: ptbl mccj ylsf xkrq
