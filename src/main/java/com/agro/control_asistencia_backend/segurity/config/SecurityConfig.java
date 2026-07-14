@@ -62,8 +62,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Define el ÚNICO origen permitido para tu frontend
-        configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:8080"));
+        // Permite peticiones desde el frontend en internet (Vercel, Netlify, localhost)
+        configuration.setAllowedOriginPatterns(List.of("*"));
 
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
