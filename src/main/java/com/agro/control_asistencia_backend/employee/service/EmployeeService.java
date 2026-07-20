@@ -129,11 +129,28 @@ public class EmployeeService {
         employee.setUser(user);
         Employee savedEmployee = employeeRepository.save(employee);
 
-        // 4. LÓGICA DE NOTIFICACIÓN DE CUENTA
-        String subject = "Bienvenido a AgroCYT: Tu Cuenta de Portal";
-        String body = String.format("Hola %s,\n\nTu cuenta de portal ha sido creada con éxito.\n" +
-                "Usuario: %s\nContraseña temporal: %s\n\nPor favor, ingresa al portal.",
-                requestDTO.getFirstName(), requestDTO.getUsername(), requestDTO.getPassword());
+        // 4. LÓGICA DE NOTIFICACIÓN DE CUENTA (Email HTML)
+        String subject = "Bienvenido a AgroCYT \uD83C\uDF3F Tu Cuenta de Portal";
+        String body = "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);\">"
+                + "<div style=\"background-color: #16a34a; padding: 30px; text-align: center;\">"
+                + "<h1 style=\"color: white; margin: 0; font-size: 24px;\">¡Bienvenido a AgroCYT!</h1>"
+                + "</div>"
+                + "<div style=\"padding: 30px; background-color: white;\">"
+                + "<p style=\"font-size: 16px; color: #374151; margin-top: 0;\">Hola <strong>" + requestDTO.getFirstName() + "</strong>,</p>"
+                + "<p style=\"font-size: 16px; color: #374151;\">Tu cuenta para acceder al portal del empleado ha sido creada exitosamente. A continuación, te proporcionamos tus credenciales de acceso:</p>"
+                + "<div style=\"background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin: 25px 0; border-radius: 4px;\">"
+                + "<p style=\"margin: 5px 0; font-size: 15px; color: #166534;\"><strong>Usuario:</strong> " + requestDTO.getUsername() + "</p>"
+                + "<p style=\"margin: 5px 0; font-size: 15px; color: #166534;\"><strong>Contraseña Temporal:</strong> " + requestDTO.getPassword() + "</p>"
+                + "</div>"
+                + "<p style=\"font-size: 14px; color: #6b7280; font-style: italic;\">Nota: Tu contraseña temporal es tu número de DNI. Te recomendamos cambiarla una vez ingreses al sistema por primera vez.</p>"
+                + "<div style=\"text-align: center; margin-top: 30px;\">"
+                + "<a href=\"http://localhost:4200/login\" style=\"background-color: #16a34a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;\">Ingresar al Portal</a>"
+                + "</div>"
+                + "</div>"
+                + "<div style=\"background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #9ca3af;\">"
+                + "© 2026 AgroCYT. Todos los derechos reservados.<br>Este es un correo automático, por favor no respondas a este mensaje."
+                + "</div>"
+                + "</div>";
 
         emailService.sendEmail(requestDTO.getEmail(), subject, body);
 
@@ -268,12 +285,27 @@ public class EmployeeService {
         myToken.setExpiryDate(expiryDate);
         tokenRepository.save(myToken);
 
-        // 5. Lógica de Envío de Correo
+        // 5. LÓGICA DE ENVÍO DE CORREO (Email HTML)
         String resetUrl = "http://localhost:4200/reset-password?token=" + token; // URL del frontend
-        String subject = "Recuperación de Contraseña - AgroCYT";
-        String body = String.format(
-                "Hola %s,\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n%s\n\nEste enlace expira en %d minutos.",
-                employee.getFirstName(), resetUrl, EXPIRATION_TIME_MINUTES);
+        String subject = "Recuperación de Contraseña \uD83C\uDF3F AgroCYT";
+        
+        String body = "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);\">"
+                + "<div style=\"background-color: #16a34a; padding: 30px; text-align: center;\">"
+                + "<h1 style=\"color: white; margin: 0; font-size: 24px;\">Recuperación de Contraseña</h1>"
+                + "</div>"
+                + "<div style=\"padding: 30px; background-color: white;\">"
+                + "<p style=\"font-size: 16px; color: #374151; margin-top: 0;\">Hola <strong>" + employee.getFirstName() + "</strong>,</p>"
+                + "<p style=\"font-size: 16px; color: #374151;\">Hemos recibido una solicitud para restablecer tu contraseña en el portal de AgroCYT. Haz clic en el botón de abajo para crear una nueva:</p>"
+                + "<div style=\"text-align: center; margin: 35px 0;\">"
+                + "<a href=\"" + resetUrl + "\" style=\"background-color: #16a34a; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;\">Restablecer Contraseña</a>"
+                + "</div>"
+                + "<p style=\"font-size: 14px; color: #6b7280; font-style: italic;\">Este enlace expirará automáticamente en <strong>" + EXPIRATION_TIME_MINUTES + " minutos</strong> por motivos de seguridad.</p>"
+                + "<p style=\"font-size: 13px; color: #9ca3af; margin-top: 20px;\">Si no solicitaste este cambio, por favor ignora este correo o contacta a soporte técnico.</p>"
+                + "</div>"
+                + "<div style=\"background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #9ca3af;\">"
+                + "© 2026 AgroCYT. Todos los derechos reservados.<br>Este es un correo automático, por favor no respondas a este mensaje."
+                + "</div>"
+                + "</div>";
 
         emailService.sendEmail(userEmail, subject, body);
 

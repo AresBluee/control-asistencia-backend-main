@@ -21,12 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "employee", uniqueConstraints = {
         // 1. CRÍTICO: employee_code debe ser único
         @UniqueConstraint(columnNames = "employee_code"),
-        // 2. CRÍTICO: dni debe ser único
-        @UniqueConstraint(columnNames = "dni"),
-        // El hash biométrico fue removido
-        // 4. CRÍTICO: email debe ser único (ya está en @Column, pero es buena práctica
-        // declararlo aquí)
-        @UniqueConstraint(columnNames = "email")
+        @UniqueConstraint(columnNames = "dni")
 })
 @Data
 @NoArgsConstructor
@@ -56,7 +51,7 @@ public class Employee {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "dni", nullable = false, length = 8, unique = true)

@@ -134,9 +134,9 @@ import lombok.Data;
     
     
         @GetMapping("/user")
-        @PreAuthorize("hasAnyAuthority(\'ROLE_EMPLOYEE\', \'ROLE_ADMIN\', \'ROLE_RRHH\')") // \uD83D\uDD12 Seguridad: Documentos personales
-        public ResponseEntity<List<Document>> getUserDocuments(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-            List<Document> userDocs = documentService.getDocumentsByUserId(userDetails.getId());
+        @PreAuthorize("hasAnyAuthority('ROLE_EMPLOYEE', 'ROLE_ADMIN', 'ROLE_RRHH')") // 🔒 Seguridad: Documentos personales
+        public ResponseEntity<List<DocumentResponseDTO>> getUserDocuments(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+            List<DocumentResponseDTO> userDocs = documentService.getDocumentDTOsByUserId(userDetails.getId());
             return ResponseEntity.ok(userDocs);
         }
      

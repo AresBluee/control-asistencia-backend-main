@@ -267,5 +267,14 @@ public class DocumentService {
                                 .orElseThrow(() -> new RuntimeException("Perfil no encontrado."));
                 return documentRepository.findByEmployee(employee);
         }
+
+        @Transactional(readOnly = true)
+        public List<DocumentResponseDTO> getDocumentDTOsByUserId(Long userId) {
+                Employee employee = employeeRepository.findByUserId(userId)
+                                .orElseThrow(() -> new RuntimeException("Perfil no encontrado."));
+                return documentRepository.findByEmployee(employee).stream()
+                                .map(this::mapToDTO)
+                                .collect(Collectors.toList());
+        }
         
 }

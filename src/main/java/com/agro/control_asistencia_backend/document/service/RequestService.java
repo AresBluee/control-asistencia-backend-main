@@ -157,7 +157,8 @@ public class RequestService {
         
         // Calcular prioridad dinámica y SLA
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        java.time.LocalDateTime dueDate = request.getRequestedDate().plusDays(request.getRequestType().getSlaDays());
+        java.time.LocalDateTime reqDate = request.getRequestedDate() != null ? request.getRequestedDate() : (request.getStartDate() != null ? request.getStartDate().atStartOfDay() : now);
+        java.time.LocalDateTime dueDate = reqDate.plusDays(request.getRequestType().getSlaDays() != null ? request.getRequestType().getSlaDays() : 7);
         long remainingSlaHours = java.time.Duration.between(now, dueDate).toHours();
         
         int calculatedPriority = request.getRequestType().getBasePriority() != null ? request.getRequestType().getBasePriority() : 1;
@@ -185,7 +186,7 @@ public class RequestService {
         .employeeName(employee.getFirstName() + " " + employee.getLastName())
         .requestType(request.getRequestType().getName())
         .details(request.getDetails())
-        .requestedDate(request.getRequestedDate().toLocalDate()) 
+        .requestedDate(reqDate.toLocalDate()) 
         .startDate(request.getStartDate())
         .endDate(request.getEndDate())
         .status(request.getStatus())
@@ -225,6 +226,7 @@ public class RequestService {
      * @param userId ID del usuario autenticado (proviene del token JWT).
      * @return Lista de solicitudes mapeadas a DTOs.
      */
+    @Transactional(readOnly = true)
     public List<RequestResponseDTO> getMyRequests(Long userId) {
         
         // 1. Buscar el empleado a partir del userId (CRÍTICO para la seguridad)
